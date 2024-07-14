@@ -6,10 +6,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/thanhphu/raftbench/dragonboat"
-	"github.com/thanhphu/raftbench/etcd"
-	"github.com/thanhphu/raftbench/hashicorp"
-	"github.com/thanhphu/raftbench/util"
+	"github.com/foreeest/raftbench/dragonboat"
+	"github.com/foreeest/raftbench/hashicorp"
+	"github.com/foreeest/raftbench/util"
 )
 
 // Command line defaults
@@ -22,7 +21,7 @@ func main() {
 	engine := flag.String("engine", "etcd", "etcd/hashi/dragonboat select the raft engine")
 	cluster := flag.String("cluster", "http://127.0.0.1:9021", "comma separated cluster peers")
 	id := flag.Int("id", 1, "node ID")
-	kvPort := flag.Int("port", 9121, "key-value server port")
+	//kvPort := flag.Int("port", 9121, "key-value server port")
 	join := flag.Bool("join", false, "join an existing cluster")
 	enabled := flag.Bool("test", false, "use this node for r/w tests")
 	logFile := flag.String("logfile", "result.csv", "name of csv log file (used together with --test)")
@@ -66,8 +65,6 @@ func main() {
 	}
 
 	switch *engine {
-	case "etcd":
-		etcd.Main(*cluster, *id, *kvPort, *join, *testParams)
 	case "hashi":
 		hashicorp.Main(httpAddr, raftAddr, joinAddr, nodeID, *testParams)
 	case "dragonboat":

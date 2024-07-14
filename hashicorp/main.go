@@ -9,9 +9,9 @@ import (
 	"net/http"
 	"os"
 
-	httpd "github.com/thanhphu/raftbench/hashicorp/http"
-	"github.com/thanhphu/raftbench/hashicorp/store"
-	"github.com/thanhphu/raftbench/util"
+	httpd "github.com/foreeest/raftbench/hashicorp/http"
+	"github.com/foreeest/raftbench/hashicorp/store"
+	"github.com/foreeest/raftbench/util"
 )
 
 func Main(httpAddr string, raftAddr string, joinAddr string, nodeID string, test util.TestParams) {

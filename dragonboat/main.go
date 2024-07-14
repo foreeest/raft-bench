@@ -15,7 +15,6 @@
 /*
 ondisk is an example program for dragonboat's on disk state machine.
 */
-
 package dragonboat
 
 import (
@@ -30,11 +29,16 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/lni/dragonboat/v4"
-	"github.com/lni/dragonboat/v4/config"
-	"github.com/lni/dragonboat/v4/logger"
+	"github.com/lni/dragonboat/v3"
+	"github.com/lni/dragonboat/v3/config"
+	"github.com/lni/dragonboat/v3/logger"
 
-	"github.com/thanhphu/raftbench/util"
+	"github.com/foreeest/raftbench/util"
+
+	"net/http"
+
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 type RequestType uint64
@@ -42,6 +46,65 @@ type RequestType uint64
 const (
 	exampleClusterID uint64 = 128
 )
+
+const (
+	PUT RequestType = iota
+	GET
+)
+
+func parseCommand(msg string) (RequestType, string, string, bool) {
+	parts := strings.Split(strings.TrimSpace(msg), " ")
+	if len(parts) == 0 || (parts[0] != "put" && parts[0] != "get") {
+		return PUT, "", "", false
+	}
+	if parts[0] == "put" {
+		if len(parts) != 3 {
+			return PUT, "", "", false
+		}
+		return PUT, parts[1], parts[2], true
+	}
+	if len(parts) != 2 {
+		return GET, "", "", false
+	}
+	return GET, parts[1], "", true
+}
+
+func printUsage() {
+	fmt.Fprintf(os.Stdout, "Usage - \n")
+	fmt.Fprintf(os.Stdout, "put key value\n")
+	fmt.Fprintf(os.Stdout, "get key\n")
+}
+
+var pingCounter = prometheus.NewCounter(
+	prometheus.CounterOpts{
+		Name: "ping_request_count",
+		Help: "No of request handled by Ping handler",
+	},
+)
+
+var (
+	requestDuration = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name:    "request_duration_seconds",
+			Help:    "Request duration in seconds",
+			Buckets: prometheus.DefBuckets,
+		},
+		[]string{"endpoint"},
+	)
+
+	requestCount = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "request_count_total",
+			Help: "Total number of requests",
+		},
+		[]string{"endpoint"},
+	)
+)
+
+func ping(w http.ResponseWriter, req *http.Request) {
+	pingCounter.Inc()
+	fmt.Fprintf(w, "pong")
+}
 
 func Main(cluster string, nodeID int, addr string, join bool, test util.TestParams) {
 	if len(addr) == 0 && nodeID != 1 && nodeID != 2 && nodeID != 3 {
@@ -71,15 +134,13 @@ func Main(cluster string, nodeID int, addr string, join bool, test util.TestPara
 	logger.GetLogger("transport").SetLevel(logger.WARNING)
 	logger.GetLogger("grpc").SetLevel(logger.WARNING)
 	rc := config.Config{
-		ReplicaID:              uint64(nodeID),
-		ShardID:                exampleClusterID,
-		ElectionRTT:            10,
-		HeartbeatRTT:           1,
-		CheckQuorum:            true,
-		SnapshotEntries:        0,
-		DisableAutoCompactions: true,
-		MaxInMemLogSize:        0,
-		CompactionOverhead:     5,
+		NodeID:             uint64(nodeID),
+		ClusterID:          exampleClusterID,
+		ElectionRTT:        10,
+		HeartbeatRTT:       1,
+		CheckQuorum:        true,
+		SnapshotEntries:    10,
+		CompactionOverhead: 5,
 	}
 	datadir := filepath.Join(
 		fmt.Sprintf("wal-dragonboat-%d", nodeID))
@@ -93,21 +154,28 @@ func Main(cluster string, nodeID int, addr string, join bool, test util.TestPara
 	if err != nil {
 		panic(err)
 	}
-	if err := nh.StartReplica(initialMembers, join, NewMemKV, rc); err != nil {
+	if err := nh.StartCluster(initialMembers, join, NewMemKV, rc); err != nil {
 		fmt.Fprintf(os.Stderr, "failed to add cluster, %v\n", err)
 		os.Exit(1)
 	}
 
 	cs := nh.GetNoOPSession(exampleClusterID)
+	ctx, _ := context.WithTimeout(context.Background(), 60*time.Second)
 
-	// Wait for shard to become ready.
-	time.Sleep(2 * time.Second)
-
-	ctx, _ := context.WithTimeout(context.Background(), 1000*time.Second)
+	prometheus.MustRegister(pingCounter)
+	prometheus.MustRegister(requestDuration)
+	prometheus.MustRegister(requestCount)
+	http.HandleFunc("/ping", ping)
+	http.Handle("/metrics", promhttp.Handler())
+	//http.HandleFunc("/", handler)
+	http.ListenAndServe(":8080", nil)
 
 	util.Bench(test, func(k string) bool {
 		_, err := nh.SyncRead(ctx, exampleClusterID, k)
-		return err == nil
+		if err != nil {
+			return false
+		}
+		return true
 	}, func(k string, v string) bool {
 		kv := &KVData{
 			Key: k,
@@ -117,8 +185,10 @@ func Main(cluster string, nodeID int, addr string, join bool, test util.TestPara
 		if err != nil {
 			return false
 		}
-
 		_, err = nh.SyncPropose(ctx, cs, data)
-		return err == nil
+		if err != nil {
+			return false
+		}
+		return true
 	})
 }
