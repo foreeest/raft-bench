@@ -52,7 +52,9 @@ func Bench(testParams TestParams, read func(string) bool, write func(string, str
 			}
 			failure += tries
 		}
-		_, _ = f.WriteString(fmt.Sprintf("write,%v,%v,%v,%v\n", i+1, failure, testParams.NumKeys*testParams.Mil, time.Since(start).Seconds()))
+		duration := time.Since(start).Seconds()
+		_, _ = f.WriteString(fmt.Sprintf("write,%v,%v,%v,%v\n", i+1, failure, testParams.NumKeys*testParams.Mil, duration))
+		//dragonboat.requestDuration.WithLabelValues(r.URL.Path).Observe(duration)
 
 		time.Sleep(testParams.Wait)
 		start = time.Now()
@@ -68,7 +70,8 @@ func Bench(testParams TestParams, read func(string) bool, write func(string, str
 			}
 			failure += tries
 		}
-		_, _ = f.WriteString(fmt.Sprintf("read,%v,%v,%v,%v\n", i+1, failure, testParams.NumKeys*testParams.Mil, time.Since(start).Seconds()))
+		duration = time.Since(start).Seconds()
+		_, _ = f.WriteString(fmt.Sprintf("read,%v,%v,%v,%v\n", i+1, failure, testParams.NumKeys*testParams.Mil, duration))
 	}
 	log.Printf("BENCHMARK COMPLETE\n")
 }
