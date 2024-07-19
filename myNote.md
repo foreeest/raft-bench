@@ -15,7 +15,7 @@ can not underatand
 `git config --global --add url."git@github.com".insteadOf "https://github.com/"`  
 then I can't push  
 `git config --global --add url."https://github.com/".insteadOf "git@github.com"`  
-doing this is useless  
+doing this is useless, this err is because of wrong url of lib    
 `git config --global --unset url."git@github.com:".insteadOf`   
 `git config --global --list`  
 well I need to
@@ -25,8 +25,37 @@ go can not import each others?
 
 ## using Prometheus ##
 
-why is that it can't run sometimes  
+why is that it can't run sometimes?    
 `ps -elf|grep raftbench`  
 I think maybe control c have problem  
 
-dont forget to `go build`   
+**don't forget** to `go build`,everytime you modify the file   
+
+## running v1.0.0 ##
+
+is `busy false` right? why the `lni v4` version less busy false?what is the difference?    
+
+### how to switch between `lni v4` and `foreeest udp` ###   
+when modifying the header, just modify this, don't modify `foreeest/raftbench`   
+
+- **udp -> v4**  
+
+```shell
+$ rm -r go.mod go.sum
+$ go mod init github.com/foreeest/raftbench
+# then modify the header in code
+$ go mod tidy
+# add replace in go.mod
+$ go build
+$ rm -r wal-*
+```
+but on github.com `raftbench` is not update, so this is **useless**, you need to use replace     
+actually this is a little confusing, I don't need to **replace** dragonboat; but I need to **replace** raftbench to local  
+Note that sometimes,not adding **replace** is right,but adding it you never wrong  
+
+```shell
+$ goreman -f Procfile-drgonboat start
+```
+
+- **v4 -> replace**   
+almost the same as udp->v4    

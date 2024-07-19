@@ -29,9 +29,13 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/lni/dragonboat/v3"
-	"github.com/lni/dragonboat/v3/config"
-	"github.com/lni/dragonboat/v3/logger"
+	// "github.com/lni/dragonboat/v4"
+	// "github.com/lni/dragonboat/v4/config"
+	// "github.com/lni/dragonboat/v4/logger"
+
+	"github.com/foreeest/dragonboat"
+	"github.com/foreeest/dragonboat/config"
+	"github.com/foreeest/dragonboat/logger"
 
 	"github.com/foreeest/raftbench/util"
 
@@ -106,6 +110,7 @@ func ping(w http.ResponseWriter, req *http.Request) {
 }
 
 func Main(cluster string, nodeID int, addr string, join bool, test util.TestParams) {
+	// fmt.Printf("\nHey,this is a test!\n\n")
 	if len(addr) == 0 && nodeID != 1 && nodeID != 2 && nodeID != 3 {
 		fmt.Fprintf(os.Stderr, "node id must be 1, 2 or 3 when address is not specified\n")
 		os.Exit(1)
@@ -133,8 +138,8 @@ func Main(cluster string, nodeID int, addr string, join bool, test util.TestPara
 	logger.GetLogger("transport").SetLevel(logger.WARNING)
 	logger.GetLogger("grpc").SetLevel(logger.WARNING)
 	rc := config.Config{
-		NodeID:             uint64(nodeID),
-		ClusterID:          exampleClusterID,
+		ReplicaID:          uint64(nodeID),
+		ShardID:            exampleClusterID,
 		ElectionRTT:        10,
 		HeartbeatRTT:       1,
 		CheckQuorum:        true,
@@ -153,7 +158,7 @@ func Main(cluster string, nodeID int, addr string, join bool, test util.TestPara
 	if err != nil {
 		panic(err)
 	}
-	if err := nh.StartCluster(initialMembers, join, NewMemKV, rc); err != nil {
+	if err := nh.StartReplica(initialMembers, join, NewMemKV, rc); err != nil {
 		fmt.Fprintf(os.Stderr, "failed to add cluster, %v\n", err)
 		os.Exit(1)
 	}
