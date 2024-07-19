@@ -1,5 +1,7 @@
 # raft-bench
 
+NOTE: this is my fork, **only for dragonboat**, using prometheus  
+
 raft-bench is a benchmark to compare the performance between
 [etcd](../../raft), [hashicorp](../../raft) and [dragonboat](../../raft)'s RAFT library
 
