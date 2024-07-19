@@ -25,3 +25,8 @@ go can not import each others?
 
 ## using Prometheus ##
 
+why is that it can't run sometimes  
+`ps -elf|grep raftbench`  
+I think maybe control c have problem  
+
+dont forget to `go build`   

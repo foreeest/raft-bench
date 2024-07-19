@@ -5,7 +5,10 @@ import (
 	"log"
 	"math/rand"
 	"os"
+
+	// "strconv"
 	"time"
+	// "github.com/foreeest/raftbench/dragonboat"
 )
 
 type TestParams struct {
@@ -53,6 +56,7 @@ func Bench(testParams TestParams, read func(string) bool, write func(string, str
 			failure += tries
 		}
 		duration := time.Since(start).Seconds()
+		// dragonboat.RequestDuration.WithLabelValues("w_operation" + strconv.Itoa(i+1)).Observe(duration)
 		_, _ = f.WriteString(fmt.Sprintf("write,%v,%v,%v,%v\n", i+1, failure, testParams.NumKeys*testParams.Mil, duration))
 		//dragonboat.requestDuration.WithLabelValues(r.URL.Path).Observe(duration)
 
@@ -71,6 +75,7 @@ func Bench(testParams TestParams, read func(string) bool, write func(string, str
 			failure += tries
 		}
 		duration = time.Since(start).Seconds()
+		// dragonboat.RequestDuration.WithLabelValues("r_operation" + strconv.Itoa(i+1)).Observe(duration)
 		_, _ = f.WriteString(fmt.Sprintf("read,%v,%v,%v,%v\n", i+1, failure, testParams.NumKeys*testParams.Mil, duration))
 	}
 	log.Printf("BENCHMARK COMPLETE\n")

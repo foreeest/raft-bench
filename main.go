@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/foreeest/raftbench/dragonboat"
-	"github.com/foreeest/raftbench/hashicorp"
 	"github.com/foreeest/raftbench/util"
 )
 
@@ -65,8 +64,6 @@ func main() {
 	}
 
 	switch *engine {
-	case "hashi":
-		hashicorp.Main(httpAddr, raftAddr, joinAddr, nodeID, *testParams)
 	case "dragonboat":
 		dragonboat.Main(*cluster, *id, *addr, *join, *testParams)
 	}

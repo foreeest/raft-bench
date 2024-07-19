@@ -82,23 +82,22 @@ var pingCounter = prometheus.NewCounter(
 	},
 )
 
-var (
-	requestDuration = prometheus.NewHistogramVec(
-		prometheus.HistogramOpts{
-			Name:    "request_duration_seconds",
-			Help:    "Request duration in seconds",
-			Buckets: prometheus.DefBuckets,
-		},
-		[]string{"endpoint"},
-	)
+// must be Capital, so that other package can visit
+var RequestDuration = prometheus.NewHistogramVec(
+	prometheus.HistogramOpts{
+		Name:    "request_duration_seconds",
+		Help:    "Request duration in seconds",
+		Buckets: prometheus.DefBuckets,
+	},
+	[]string{"endpoint"},
+)
 
-	requestCount = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Name: "request_count_total",
-			Help: "Total number of requests",
-		},
-		[]string{"endpoint"},
-	)
+var requestCount = prometheus.NewCounterVec(
+	prometheus.CounterOpts{
+		Name: "request_count_total",
+		Help: "Total number of requests",
+	},
+	[]string{"endpoint"},
 )
 
 func ping(w http.ResponseWriter, req *http.Request) {
@@ -162,13 +161,13 @@ func Main(cluster string, nodeID int, addr string, join bool, test util.TestPara
 	cs := nh.GetNoOPSession(exampleClusterID)
 	ctx, _ := context.WithTimeout(context.Background(), 60*time.Second)
 
+	// the promethues module
 	prometheus.MustRegister(pingCounter)
-	prometheus.MustRegister(requestDuration)
+	prometheus.MustRegister(RequestDuration)
 	prometheus.MustRegister(requestCount)
 	http.HandleFunc("/ping", ping)
 	http.Handle("/metrics", promhttp.Handler())
-	//http.HandleFunc("/", handler)
-	http.ListenAndServe(":8080", nil)
+	http.ListenAndServe(":8090", nil)
 
 	util.Bench(test, func(k string) bool {
 		_, err := nh.SyncRead(ctx, exampleClusterID, k)
