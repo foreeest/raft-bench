@@ -2,12 +2,12 @@ module github.com/foreeest/raftbench
 
 go 1.22.2
 
+replace github.com/foreeest/raftbench => ../raft-bench-prometheus-v100
+
 require (
 	github.com/foreeest/dragonboat v1.0.0
 	github.com/prometheus/client_golang v1.19.1
 )
-
-// replace github.com/foreeest/raftbench => ../raftbench
 
 require (
 	github.com/DataDog/zstd v1.4.5 // indirect

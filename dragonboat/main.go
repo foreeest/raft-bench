@@ -29,10 +29,6 @@ import (
 	"syscall"
 	"time"
 
-	// "github.com/lni/dragonboat/v4"
-	// "github.com/lni/dragonboat/v4/config"
-	// "github.com/lni/dragonboat/v4/logger"
-
 	"github.com/foreeest/dragonboat"
 	"github.com/foreeest/dragonboat/config"
 	"github.com/foreeest/dragonboat/logger"
@@ -110,7 +106,7 @@ func ping(w http.ResponseWriter, req *http.Request) {
 }
 
 func Main(cluster string, nodeID int, addr string, join bool, test util.TestParams) {
-	// fmt.Printf("\nHey,this is a test!\n\n")
+	fmt.Printf("\nMODification is VALID!\n\n") // see if this is the same as the newest
 	if len(addr) == 0 && nodeID != 1 && nodeID != 2 && nodeID != 3 {
 		fmt.Fprintf(os.Stderr, "node id must be 1, 2 or 3 when address is not specified\n")
 		os.Exit(1)
@@ -135,15 +131,15 @@ func Main(cluster string, nodeID int, addr string, join bool, test util.TestPara
 	fmt.Fprintf(os.Stdout, "node address: %s\n", nodeAddr)
 	logger.GetLogger("raft").SetLevel(logger.ERROR)
 	logger.GetLogger("rsm").SetLevel(logger.WARNING)
-	logger.GetLogger("transport").SetLevel(logger.WARNING)
+	logger.GetLogger("transport").SetLevel(logger.WARNING) // so the E info don't come up
 	logger.GetLogger("grpc").SetLevel(logger.WARNING)
 	rc := config.Config{
-		ReplicaID:          uint64(nodeID),
+		ReplicaID:          uint64(nodeID), // beacause change the version, so change the name
 		ShardID:            exampleClusterID,
 		ElectionRTT:        10,
 		HeartbeatRTT:       1,
 		CheckQuorum:        true,
-		SnapshotEntries:    10,
+		SnapshotEntries:    10, // can be set as 0, to disable snapshot
 		CompactionOverhead: 5,
 	}
 	datadir := filepath.Join(
@@ -163,7 +159,11 @@ func Main(cluster string, nodeID int, addr string, join bool, test util.TestPara
 		os.Exit(1)
 	}
 
-	cs := nh.GetNoOPSession(exampleClusterID)
+	cs := nh.GetNoOPSession(exampleClusterID) // what is this?
+
+	// Wait for shard to become ready.
+	time.Sleep(2 * time.Second)
+
 	ctx, _ := context.WithTimeout(context.Background(), 60*time.Second)
 
 	// the promethues module

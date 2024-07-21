@@ -1,6 +1,15 @@
 # raft-bench
 
 NOTE: this is my fork, **only for dragonboat**, using prometheus  
+to develop the library and run the code  
+```shell
+# replace github.com/foreeest/raftbench => ../raft-bench-prometheus-v100 (which is the dir name)
+# develop
+$ go mod tidy
+$ go build
+$ rm -r wal-*
+$ goreman -f Procfile-dragonboat start
+```
 
 raft-bench is a benchmark to compare the performance between
 [etcd](../../raft), [hashicorp](../../raft) and [dragonboat](../../raft)'s RAFT library

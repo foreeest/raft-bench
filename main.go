@@ -55,9 +55,9 @@ func main() {
 		NumKeys:   *numKeys,
 		Mil:       *mil,
 		Runs:      *runs,
-		Wait:      time.Duration(*wait) * time.Millisecond,
-		FirstWait: time.Duration(*firstWait) * time.Millisecond,
-		Step:      time.Duration(*step) * time.Millisecond,
+		Wait:      time.Duration(*wait) * time.Millisecond,      // 3s
+		FirstWait: time.Duration(*firstWait) * time.Millisecond, // 10s
+		Step:      time.Duration(*step) * time.Millisecond,      // 0.1s
 		MaxTries:  *maxTries,
 		Enabled:   *enabled,
 		LogFile:   *logFile,

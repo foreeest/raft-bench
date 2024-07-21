@@ -34,6 +34,8 @@ I think maybe control c have problem
 ## running v1.0.0 ##
 
 is `busy false` right? why the `lni v4` version less busy false?what is the difference?    
+the `step` param is too small?  
+why is the last has more failure?     
 
 ### how to switch between `lni v4` and `foreeest udp` ###   
 when modifying the header, just modify this, don't modify `foreeest/raftbench`   
@@ -44,8 +46,8 @@ when modifying the header, just modify this, don't modify `foreeest/raftbench`
 $ rm -r go.mod go.sum
 $ go mod init github.com/foreeest/raftbench
 # then modify the header in code
+# add replace in go.mod `replace github.com/foreeest/raftbench => ../raftbench`  
 $ go mod tidy
-# add replace in go.mod
 $ go build
 $ rm -r wal-*
 ```
@@ -59,3 +61,16 @@ $ goreman -f Procfile-drgonboat start
 
 - **v4 -> replace**   
 almost the same as udp->v4    
+
+## get better performance ##
+
+- param
+step set higher?   
+- why modifying the first send will get connection refused?  
+
+
+## sending snapshot? ##
+
+what is the sz of snapshot?  
+
+why that tcp is sticked?  
